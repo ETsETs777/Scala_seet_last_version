@@ -1,0 +1,29 @@
+# SBT
+target/
+project/target/
+project/project/
+.cache
+.history
+dist/*
+*.class
+*.log
+
+# Scala
+*.jar
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+
