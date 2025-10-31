@@ -6,7 +6,6 @@ scalaVersion := "2.13.12"
 
 organization := "com.example"
 
-// Дependencies
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.17" % Test,
   "org.scala-lang.modules" %% "scala-parser-combinators" % "2.3.0",
@@ -25,6 +24,5 @@ scalacOptions ++= Seq(
   "-Ywarn-value-discard"
 )
 
-// Описание проекта
 description := "Comprehensive Scala project demonstrating best practices and language features"
 

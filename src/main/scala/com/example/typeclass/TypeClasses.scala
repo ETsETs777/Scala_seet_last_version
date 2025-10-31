@@ -1,32 +1,23 @@
 package com.example.typeclass
 
-/**
- * Демонстрация type classes и implicit parameters
- */
-
-// Type class для сериализации
 trait Serializer[T] {
   def serialize(value: T): String
 }
 
 object Serializer {
-  // Instances для разных типов
   implicit val intSerializer: Serializer[Int] = (value: Int) => s"Int($value)"
   implicit val stringSerializer: Serializer[String] = (value: String) => s"String($value)"
   implicit val doubleSerializer: Serializer[Double] = (value: Double) => f"Double($value%.2f)"
   
-  // Instance для списков
   implicit def listSerializer[T](implicit s: Serializer[T]): Serializer[List[T]] = {
     (list: List[T]) => s"[${list.map(s.serialize).mkString(", ")}]"
   }
   
-  // Extension method
   implicit class SerializerOps[T](value: T)(implicit serializer: Serializer[T]) {
     def serialize: String = serializer.serialize(value)
   }
 }
 
-// Type class для сравнения
 trait Comparator[T] {
   def compare(a: T, b: T): Int
 }
@@ -43,7 +34,6 @@ object Comparator {
   }
 }
 
-// Type class для суммы (monoid)
 trait Summable[T] {
   def zero: T
   def add(a: T, b: T): T
@@ -65,7 +55,6 @@ object Summable {
   }
 }
 
-// Пример использования с implicit parameters
 object TypeClassExample {
   import Serializer._
   import Comparator._
@@ -80,23 +69,18 @@ object TypeClassExample {
   }
   
   def example(): Unit = {
-    // Использование type classes
     println(serializeValue(42))
     println(serializeValue("Hello"))
     println(serializeValue(3.14159))
     println(serializeValue(List(1, 2, 3)))
     
-    // Использование extension methods
     println(42.serialize)
     println("World".serialize)
     
-    // Сравнение
     println(maxValue(5, 10))
     println(maxValue("abc", "def"))
     
-    // Сумма
     println(sum(List(1, 2, 3, 4, 5)))
     println(sum(List("a", "b", "c")))
   }
 }
-

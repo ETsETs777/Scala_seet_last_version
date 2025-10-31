@@ -1,8 +1,5 @@
 package com.example.util
 
-/**
- * Неявные классы для расширения функциональности (type enrichment)
- */
 object Extensions {
   implicit class RichString(val s: String) extends AnyVal {
     def capitalizeWords: String = {
@@ -33,4 +30,3 @@ object Extensions {
     }
   }
 }
-

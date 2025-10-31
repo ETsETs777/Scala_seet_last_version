@@ -2,9 +2,6 @@ package com.example.functional
 
 import scala.util.Try
 
-/**
- * Демонстрация работы с Option, Try и Either (монадные операции)
- */
 object MonadExample {
   
   def divide(a: Double, b: Double): Option[Double] = {
@@ -35,7 +32,6 @@ object MonadExample {
     numbers.flatMap(parseDouble).find(_ > 0)
   }
   
-  // Работа с Try
   def divideWithTry(a: Double, b: Double): Try[Double] = Try {
     if (b == 0) throw new ArithmeticException("Division by zero")
     a / b
@@ -51,7 +47,6 @@ object MonadExample {
     } yield result
   }
   
-  // Работа с Either
   type ErrorMessage = String
   type Result[A] = Either[ErrorMessage, A]
   

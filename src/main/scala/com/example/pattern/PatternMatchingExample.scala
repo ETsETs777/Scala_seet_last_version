@@ -2,9 +2,6 @@ package com.example.pattern
 
 import com.example.models.{Product, Active, Discontinued, OutOfStock}
 
-/**
- * Примеры использования pattern matching в Scala
- */
 object PatternMatchingExample {
   
   def describeProduct(product: Product): String = product.status match {
@@ -36,4 +33,3 @@ object PatternMatchingExample {
     case head :: tail => s"Первый: $head, остальных: ${tail.length}"
   }
 }
-

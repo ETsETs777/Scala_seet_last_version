@@ -1,8 +1,5 @@
 package com.example.models
 
-/**
- * Модель пользователя с использованием case class для неизменяемости
- */
 case class User(
   id: Long,
   name: String,

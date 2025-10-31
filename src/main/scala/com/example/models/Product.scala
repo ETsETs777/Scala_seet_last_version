@@ -2,9 +2,6 @@ package com.example.models
 
 import java.time.LocalDateTime
 
-/**
- * Модель продукта с sealed trait для безопасного паттерн-матчинга
- */
 sealed trait ProductStatus
 case object Active extends ProductStatus
 case object Discontinued extends ProductStatus

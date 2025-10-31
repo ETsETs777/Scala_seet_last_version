@@ -1,8 +1,5 @@
 package com.example.config
 
-/**
- * Простая система конфигурации приложения
- */
 object Config {
   
   case class AppConfig(
@@ -14,7 +11,6 @@ object Config {
     databaseUrl: Option[String]
   )
   
-  // Значения по умолчанию
   private val defaultConfig = AppConfig(
     appName = "ScalaProject",
     version = "1.0.0",
@@ -24,7 +20,6 @@ object Config {
     databaseUrl = None
   )
   
-  // Чтение из переменных окружения
   def fromEnvironment: AppConfig = {
     AppConfig(
       appName = sys.env.getOrElse("APP_NAME", defaultConfig.appName),
@@ -36,10 +31,8 @@ object Config {
     )
   }
   
-  // Текущая конфигурация (можно расширить для чтения из файла)
   lazy val current: AppConfig = fromEnvironment
   
-  // Геттеры для удобства
   object Settings {
     val appName: String = current.appName
     val version: String = current.version
@@ -50,7 +43,6 @@ object Config {
   }
 }
 
-// Настройки для различных компонентов
 object ComponentConfig {
   
   case class UserServiceConfig(
@@ -68,4 +60,3 @@ object ComponentConfig {
   val userService: UserServiceConfig = UserServiceConfig()
   val productService: ProductServiceConfig = ProductServiceConfig()
 }
-

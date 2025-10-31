@@ -12,19 +12,14 @@ object Main {
     println("Демонстрация возможностей Scala")
     println("=" * 50)
     
-    // Демонстрация работы с пользователями
     demonstrateUserService()
     
-    // Демонстрация работы с продуктами
     demonstrateProductService()
     
-    // Демонстрация pattern matching
     demonstratePatternMatching()
     
-    // Демонстрация функционального программирования
     demonstrateFunctionalProgramming()
     
-    // Демонстрация расширений
     demonstrateExtensions()
     
     println("\n" + "=" * 50)
@@ -36,7 +31,6 @@ object Main {
     println("\n--- Работа с пользователями ---")
     val userService = new UserService()
     
-    // Создание пользователей
     User.create(1, "Иван Иванов", "ivan@example.com", 25).foreach(userService.addUser)
     User.create(2, "Мария Петрова", "maria@example.com", 30).foreach(userService.addUser)
     User.create(3, "Петр Сидоров", "petr@example.com", 17).foreach(userService.addUser)
@@ -56,7 +50,6 @@ object Main {
     println("\n--- Работа с продуктами ---")
     val productService = new ProductService()
     
-    // Создание продуктов
     Product.create("Ноутбук", 50000, 10).foreach(productService.addProduct)
     Product.create("Мышь", 1500, 25).foreach(productService.addProduct)
     Product.create("Клавиатура", 3000, 0).foreach(productService.addProduct)
@@ -92,7 +85,6 @@ object Main {
   def demonstrateFunctionalProgramming(): Unit = {
     println("\n--- Функциональное программирование ---")
     
-    // Работа с Option и for-comprehension
     val result1 = MonadExample.safeDivide("10", "2")
     val result2 = MonadExample.safeDivide("10", "0")
     val result3 = MonadExample.safeDivide("abc", "2")
@@ -101,7 +93,6 @@ object Main {
     println(s"  10 / 0 = ${result2.getOrElse("Ошибка деления на ноль")}")
     println(s"  abc / 2 = ${result3.getOrElse("Ошибка парсинга")}")
     
-    // Работа с коллекциями
     val numbers = List("1", "2", "-3", "4.5", "abc", "6")
     val positive = MonadExample.processNumbers(numbers)
     println(s"\n  Положительные числа из $numbers: $positive")
@@ -130,4 +121,3 @@ object Main {
     println(s"\n  Подсчет вхождений: ${words.groupByCount}")
   }
 }
-

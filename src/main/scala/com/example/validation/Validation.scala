@@ -2,9 +2,6 @@ package com.example.validation
 
 import scala.util.{Try, Success, Failure}
 
-/**
- * Система валидации данных
- */
 sealed trait ValidationError {
   def message: String
 }
@@ -73,7 +70,6 @@ object Validator {
     }
   }
   
-  // Комбинированная валидация
   def combineValidations[A, B, C](
     va: ValidationResult[A],
     vb: ValidationResult[B]
@@ -100,7 +96,6 @@ object Validator {
   }
 }
 
-// Обработка ошибок
 object ErrorHandler {
   import Validator.ValidationResult
   
@@ -126,4 +121,3 @@ object ErrorHandler {
 
 class ValidationException(val errors: List[ValidationError])
   extends Exception(ErrorHandler.formatErrors(errors))
-

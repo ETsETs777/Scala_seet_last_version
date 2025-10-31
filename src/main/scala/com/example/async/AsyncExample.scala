@@ -4,16 +4,12 @@ import scala.concurrent.{Future, ExecutionContext}
 import scala.util.{Success, Failure}
 import java.util.concurrent.Executors
 
-/**
- * Демонстрация асинхронного программирования с Future
- */
 object AsyncExample {
   
   implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
   
-  // Простые асинхронные операции
   def asyncCalculation(x: Int): Future[Int] = Future {
-    Thread.sleep(100) // Имитация долгой операции
+    Thread.sleep(100)
     x * 2
   }
   
@@ -22,12 +18,10 @@ object AsyncExample {
     s.toUpperCase
   }
   
-  // Композиция Future с map и flatMap
   def processData(x: Int): Future[String] = {
     asyncCalculation(x).map(result => s"Result: $result")
   }
   
-  // For-comprehension с Future
   def combineAsyncOperations(x: Int, y: Int): Future[Int] = {
     for {
       result1 <- asyncCalculation(x)
@@ -35,7 +29,6 @@ object AsyncExample {
     } yield result1 + result2
   }
   
-  // Обработка ошибок
   def safeAsyncOperation(x: Int): Future[Int] = Future {
     if (x < 0) throw new IllegalArgumentException("Negative number")
     x * 2
@@ -44,18 +37,15 @@ object AsyncExample {
     case _: Exception => -1
   }
   
-  // Обработка нескольких Future
   def combineMultipleFutures(numbers: List[Int]): Future[List[Int]] = {
     val futures = numbers.map(asyncCalculation)
     Future.sequence(futures)
   }
   
-  // Первый успешный результат
   def firstSuccess[A](futures: List[Future[A]]): Future[Option[A]] = {
     Future.sequence(futures).map(_.headOption)
   }
   
-  // Таймаут для Future (упрощенная версия)
   def withTimeout[A](future: Future[A], timeoutMs: Long): Future[Option[A]] = {
     Future {
       Thread.sleep(timeoutMs)
@@ -65,7 +55,6 @@ object AsyncExample {
     }
   }
   
-  // Цепочка операций с обработкой ошибок
   def chainOperations(x: Int): Future[String] = {
     asyncCalculation(x)
       .map(_ + 10)
@@ -75,7 +64,6 @@ object AsyncExample {
       }
   }
   
-  // Пример использования
   def example(): Unit = {
     val future1 = asyncCalculation(5)
     future1.onComplete {
@@ -90,4 +78,3 @@ object AsyncExample {
     future3.foreach(results => println(s"All results: $results"))
   }
 }
-

@@ -3,10 +3,6 @@ package com.example.service
 import com.example.models.{Product, ProductStatus, Active, OutOfStock}
 import scala.util.Try
 
-/**
- * Сервис для работы с продуктами
- * Демонстрирует функциональное программирование и работу с коллекциями
- */
 class ProductService {
   private var products: Map[Long, Product] = Map.empty
   private var nextId: Long = 1
@@ -77,4 +73,3 @@ class ProductService {
     products.values.filter(p => p.price >= minPrice && p.price <= maxPrice).toList
   }
 }
-
