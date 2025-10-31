@@ -9,7 +9,8 @@ organization := "com.example"
 // Дependencies
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.17" % Test,
-  "org.scala-lang.modules" %% "scala-parser-combinators" % "2.3.0"
+  "org.scala-lang.modules" %% "scala-parser-combinators" % "2.3.0",
+  "com.typesafe.akka" %% "akka-actor" % "2.6.20"
 )
 
 scalacOptions ++= Seq(
