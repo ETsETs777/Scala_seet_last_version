@@ -1,6 +1,6 @@
 package com.example.functional
 
-import scala.util.{Try, Success, Failure}
+import scala.util.Try
 
 /**
  * Демонстрация работы с Option, Try и Either (монадные операции)
@@ -70,9 +70,9 @@ object MonadExample {
   
   def safeDivideEither(a: String, b: String): Result[Double] = {
     for {
-      numA <- parseDoubleEither(a).right
-      numB <- parseDoubleEither(b).right
-      result <- divideEither(numA, numB).right
+      numA <- parseDoubleEither(a)
+      numB <- parseDoubleEither(b)
+      result <- divideEither(numA, numB)
     } yield result
   }
 }

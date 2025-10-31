@@ -29,9 +29,8 @@ case class InvalidQuantity(quantity: Int) extends ValidationError {
   def message: String = s"Invalid quantity: $quantity (must be non-negative)"
 }
 
-type ValidationResult[A] = Either[List[ValidationError], A]
-
 object Validator {
+  type ValidationResult[A] = Either[List[ValidationError], A]
   
   def validateEmail(email: String): ValidationResult[String] = {
     val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$".r
@@ -103,6 +102,7 @@ object Validator {
 
 // Обработка ошибок
 object ErrorHandler {
+  import Validator.ValidationResult
   
   def handleValidation[A](result: ValidationResult[A]): Try[A] = {
     result match {
