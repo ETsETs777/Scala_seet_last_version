@@ -25,9 +25,6 @@ scalacOptions ++= Seq(
   "-Ywarn-value-discard"
 )
 
-// Настройки для генерации документации
-enablePlugins(SiteScaladocPlugin)
-
 // Описание проекта
 description := "Comprehensive Scala project demonstrating best practices and language features"
 
