@@ -51,7 +51,7 @@ class UserService {
   def getStatistics: UserStatistics = {
     val allUsers = users.values.toList
     if (allUsers.isEmpty) {
-      UserStatistics(0, 0, 0, 0, 0)
+      UserStatistics(0, 0, 0.0, 0, 0, 0)
     } else {
       val activeCount = allUsers.count(_.isActive)
       val avgAge = allUsers.map(_.age).sum.toDouble / allUsers.size

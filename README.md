@@ -60,28 +60,50 @@ ScalaProject/
 
 ## Установка и запуск
 
+### Требования для установки
+
+Проект уже настроен с необходимыми инструментами:
+- **Java JDK 17** (установлен в `C:\Users\wsr\jdk\jdk-17.0.2`)
+- **sbt 1.9.7** (launcher установлен)
+
+Для запуска используйте предоставленный скрипт `sbt.bat` или напрямую:
+
 ### Запуск приложения
 
+**Вариант 1 (через скрипт):**
 ```bash
-sbt run
+.\sbt.bat run
+```
+
+**Вариант 2 (напрямую):**
+```bash
+$env:JAVA_HOME = "C:\Users\wsr\jdk\jdk-17.0.2"
+$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+java -Xmx512M -jar "$env:USERPROFILE\.sbt\bin\sbt-launch.jar" run
 ```
 
 ### Запуск тестов
 
 ```bash
-sbt test
+.\sbt.bat test
+```
+
+или
+
+```bash
+java -Xmx512M -jar "$env:USERPROFILE\.sbt\bin\sbt-launch.jar" test
 ```
 
 ### Компиляция
 
 ```bash
-sbt compile
+.\sbt.bat compile
 ```
 
 ### Создание JAR файла
 
 ```bash
-sbt package
+.\sbt.bat package
 ```
 
 ## Основные возможности

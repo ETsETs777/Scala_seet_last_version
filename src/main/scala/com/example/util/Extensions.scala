@@ -29,7 +29,7 @@ object Extensions {
     def safeLast: Option[T] = if (list.isEmpty) None else Some(list.last)
     
     def groupByCount: Map[T, Int] = {
-      list.groupBy(identity).mapValues(_.size)
+      list.groupBy(identity).view.mapValues(_.size).toMap
     }
   }
 }

@@ -1,6 +1,6 @@
 package com.example.service
 
-import com.example.models.{Product, ProductStatus, Active, Discontinued, OutOfStock}
+import com.example.models.{Product, ProductStatus, Active, OutOfStock}
 import scala.util.Try
 
 /**

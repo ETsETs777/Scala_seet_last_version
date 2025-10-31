@@ -1,6 +1,6 @@
 package com.example.pattern
 
-import com.example.models.{Product, ProductStatus, Active, Discontinued, OutOfStock}
+import com.example.models.{Product, Active, Discontinued, OutOfStock}
 
 /**
  * Примеры использования pattern matching в Scala

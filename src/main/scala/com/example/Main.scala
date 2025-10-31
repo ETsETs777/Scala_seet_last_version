@@ -1,6 +1,6 @@
 package com.example
 
-import com.example.models.{User, Product, Active}
+import com.example.models.{User, Product}
 import com.example.service.{UserService, ProductService}
 import com.example.util.Extensions._
 import com.example.functional.MonadExample
@@ -48,7 +48,7 @@ object Main {
     val stats = userService.getStatistics
     println(s"  Всего: ${stats.totalUsers}")
     println(s"  Активных: ${stats.activeUsers}")
-    println(s"  Средний возраст: ${stats.averageAge.formatted("%.2f")}")
+    println(f"  Средний возраст: ${stats.averageAge}%.2f")
     println(s"  Могут голосовать: ${stats.canVoteCount}")
   }
   
@@ -74,7 +74,7 @@ object Main {
   def demonstratePatternMatching(): Unit = {
     println("\n--- Pattern Matching ---")
     
-    val numbers = List(1, -5, 0, 3.14, "test")
+    val numbers: List[Any] = List(1, -5, 0, 3.14, "test")
     numbers.foreach(n => println(s"  ${PatternMatchingExample.processNumber(n)}"))
     
     val userInfo = ("Алексей", 28, "alex@example.com")
