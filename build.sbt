@@ -21,6 +21,13 @@ scalacOptions ++= Seq(
   "-Xlint",
   "-Ywarn-dead-code",
   "-Ywarn-numeric-widen",
-  "-Ywarn-unused"
+  "-Ywarn-unused",
+  "-Ywarn-value-discard"
 )
+
+// Настройки для генерации документации
+enablePlugins(SiteScaladocPlugin)
+
+// Описание проекта
+description := "Comprehensive Scala project demonstrating best practices and language features"
 
