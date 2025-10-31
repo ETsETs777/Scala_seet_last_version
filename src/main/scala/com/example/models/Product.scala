@@ -25,6 +25,45 @@ case class Product(
   def updatePrice(newPrice: BigDecimal): Product = {
     if (newPrice > 0) copy(price = newPrice) else this
   }
+  
+  def applyDiscount(percentage: BigDecimal): Product = {
+    if (percentage > 0 && percentage <= 100) {
+      val discount = price * (percentage / 100)
+      copy(price = price - discount)
+    } else {
+      this
+    }
+  }
+  
+  def isExpensive(threshold: BigDecimal): Boolean = price > threshold
+  
+  def isLowStock(minStock: Int): Boolean = quantity < minStock
+  
+  def canSell(amount: Int): Boolean = isAvailable && quantity >= amount
+  
+  def sell(amount: Int): Option[Product] = {
+    if (canSell(amount)) {
+      val newQuantity = quantity - amount
+      val newStatus = if (newQuantity == 0) OutOfStock else status
+      Some(copy(quantity = newQuantity, status = newStatus))
+    } else {
+      None
+    }
+  }
+  
+  def restock(amount: Int): Product = {
+    if (amount > 0) {
+      val newQuantity = quantity + amount
+      val newStatus = if (status == OutOfStock && newQuantity > 0) Active else status
+      copy(quantity = newQuantity, status = newStatus)
+    } else {
+      this
+    }
+  }
+  
+  def daysSinceCreation: Long = {
+    java.time.Duration.between(createdAt, LocalDateTime.now()).toDays
+  }
 }
 
 object Product {

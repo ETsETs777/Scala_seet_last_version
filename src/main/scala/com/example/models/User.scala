@@ -13,15 +13,52 @@ case class User(
   def canVote: Boolean = age >= 18
   
   def displayName: String = s"$name ($email)"
+  
+  def ageGroup: String = age match {
+    case a if a < 18 => "Minor"
+    case a if a < 65 => "Adult"
+    case _ => "Senior"
+  }
+  
+  def isValid: Boolean = {
+    age > 0 && age < 150 && email.contains("@") && name.nonEmpty
+  }
+  
+  def updateAge(newAge: Int): Option[User] = {
+    if (newAge > 0 && newAge < 150) Some(this.copy(age = newAge)) else None
+  }
+  
+  def deactivate: User = this.copy(isActive = false)
+  
+  def activate: User = this.copy(isActive = true)
 }
 
 object User {
   def create(id: Long, name: String, email: String, age: Int): Option[User] = {
-    if (age > 0 && age < 150 && email.contains("@")) {
+    if (age > 0 && age < 150 && email.contains("@") && name.nonEmpty) {
       Some(User(id, name, email, age))
     } else {
       None
     }
   }
+  
+  def fromString(data: String): Option[User] = {
+    val parts = data.split(",")
+    if (parts.length == 4) {
+      try {
+        val id = parts(0).trim.toLong
+        val name = parts(1).trim
+        val email = parts(2).trim
+        val age = parts(3).trim.toInt
+        create(id, name, email, age)
+      } catch {
+        case _: NumberFormatException => None
+      }
+    } else {
+      None
+    }
+  }
+  
+  val DefaultUser: User = User(0, "Unknown", "unknown@example.com", 0, isActive = false)
 }
 
