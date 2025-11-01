@@ -2,14 +2,10 @@ package com.example.serialization
 
 import com.example.models.{User, Product, ProductStatus}
 
-/**
- * JSON сериализатор для моделей
- */
+
 object JsonSerializer {
   
-  /**
-   * Сериализует User в JSON
-   */
+  
   def toJson(user: User): String = {
     s"""{
       |  "id": ${user.id},
@@ -20,9 +16,7 @@ object JsonSerializer {
       |}""".stripMargin
   }
   
-  /**
-   * Сериализует Product в JSON
-   */
+  
   def toJson(product: Product): String = {
     s"""{
       |  "id": ${product.id},
@@ -34,17 +28,13 @@ object JsonSerializer {
       |}""".stripMargin
   }
   
-  /**
-   * Сериализует список объектов в JSON массив
-   */
+  
   def toJsonArray[T](items: List[T], serializer: T => String): String = {
     val itemsJson = items.map(serializer).mkString(",\n    ")
     s"[\n    $itemsJson\n  ]"
   }
   
-  /**
-   * Десериализует User из JSON строки
-   */
+  
   def fromJsonUser(json: String): Option[User] = {
     try {
       val id = extractLong(json, "id")
@@ -61,9 +51,7 @@ object JsonSerializer {
     }
   }
   
-  /**
-   * Десериализует Product из JSON строки
-   */
+  
   def fromJsonProduct(json: String): Option[Product] = {
     try {
       val name = extractString(json, "name")

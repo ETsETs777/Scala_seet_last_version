@@ -1,8 +1,6 @@
 package com.example.util
 
-/**
- * Результат пагинации
- */
+
 case class PageResult[T](
   items: List[T],
   page: Int,
@@ -16,14 +14,10 @@ case class PageResult[T](
   def endIndex: Int = math.min(page * pageSize, totalItems)
 }
 
-/**
- * Утилиты для пагинации
- */
+
 object Pagination {
   
-  /**
-   * Разбивает список на страницы
-   */
+  
   def paginate[T](items: List[T], page: Int, pageSize: Int): PageResult[T] = {
     val totalItems = items.size
     val totalPages = math.ceil(totalItems.toDouble / pageSize).toInt
@@ -41,9 +35,7 @@ object Pagination {
     )
   }
   
-  /**
-   * Создает пагинацию для пустого списка
-   */
+  
   def emptyPage[T](page: Int = 1, pageSize: Int = 10): PageResult[T] = {
     PageResult(
       items = List.empty,
@@ -54,9 +46,7 @@ object Pagination {
     )
   }
   
-  /**
-   * Проверяет валидность параметров пагинации
-   */
+  
   def validate(page: Int, pageSize: Int): Option[(Int, Int)] = {
     if (page < 1 || pageSize < 1 || pageSize > 1000) {
       None

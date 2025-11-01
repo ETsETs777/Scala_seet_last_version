@@ -1,10 +1,6 @@
 package com.example.util
 
-/**
- * Расширения типов через implicit classes (Type Enrichment)
- * 
- * Добавляет полезные методы к стандартным типам Scala
- */
+
 object Extensions {
   implicit class RichString(val s: String) extends AnyVal {
     def capitalizeWords: String = {

@@ -9,11 +9,7 @@ import com.example.serialization.JsonSerializer
 import com.example.event.{GlobalEventBus, EventHandler}
 import com.example.metrics.GlobalMetrics
 
-/**
- * Главный класс приложения
- * 
- * Демонстрирует основные возможности Scala-приложения
- */
+
 object Main {
   def main(args: Array[String]): Unit = {
     println("=" * 50)

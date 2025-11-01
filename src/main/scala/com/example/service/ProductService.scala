@@ -6,11 +6,7 @@ import com.example.event.{GlobalEventBus, ProductCreatedEvent, ProductSoldEvent}
 import com.example.metrics.GlobalMetrics
 import scala.util.Try
 
-/**
- * Сервис для управления продуктами
- * 
- * Предоставляет операции по управлению складом и продажами
- */
+
 class ProductService(logger: Logger = CompositeLogger) {
   private var products: Map[Long, Product] = Map.empty
   private var nextId: Long = 1
@@ -96,44 +92,23 @@ class ProductService(logger: Logger = CompositeLogger) {
     products.values.filter(p => p.price >= minPrice && p.price <= maxPrice).toList
   }
   
-  /**
-   * Ищет продукты по названию (без учета регистра)
-   * 
-   * @param namePattern часть названия для поиска
-   * @return список найденных продуктов
-   */
+  
   def searchProductsByName(namePattern: String): List[Product] = {
     val pattern = namePattern.toLowerCase
     products.values.filter(p => p.name.toLowerCase.contains(pattern)).toList
   }
   
-  /**
-   * Получает продукты с низким запасом
-   * 
-   * @param threshold минимальный порог количества
-   * @return список продуктов с количеством ниже порога
-   */
+  
   def getLowStockProducts(threshold: Int = 10): List[Product] = {
     products.values.filter(_.quantity < threshold).toList
   }
   
-  /**
-   * Получает топ N самых дорогих продуктов
-   * 
-   * @param n количество продуктов
-   * @return список продуктов, отсортированных по цене (убывание)
-   */
+  
   def getTopExpensiveProducts(n: Int): List[Product] = {
     products.values.toList.sortBy(_.price)(Ordering[BigDecimal].reverse).take(n)
   }
   
-  /**
-   * Применяет скидку к продукту
-   * 
-   * @param id идентификатор продукта
-   * @param percentage процент скидки (0-100)
-   * @return обновленный продукт или None если не найден
-   */
+  
   def applyDiscount(id: Long, percentage: BigDecimal): Option[Product] = {
     logger.debug(s"Applying discount $percentage% to product: $id")
     products.get(id).map { product =>
@@ -149,13 +124,7 @@ class ProductService(logger: Logger = CompositeLogger) {
     }
   }
   
-  /**
-   * Применяет скидку ко всем продуктам с определенным статусом
-   * 
-   * @param status статус продуктов для применения скидки
-   * @param percentage процент скидки (0-100)
-   * @return список обновленных продуктов
-   */
+  
   def applyDiscountByStatus(status: ProductStatus, percentage: BigDecimal): List[Product] = {
     logger.info(s"Applying discount $percentage% to all products with status: $status")
     val updatedProducts = products.values
@@ -170,11 +139,7 @@ class ProductService(logger: Logger = CompositeLogger) {
     updatedProducts
   }
   
-  /**
-   * Экспортирует все продукты в формат CSV
-   * 
-   * @return строка в формате CSV
-   */
+  
   def exportToCSV: String = {
     val header = "id,name,price,quantity,status,createdAt\n"
     val rows = products.values.map { p =>
@@ -184,15 +149,10 @@ class ProductService(logger: Logger = CompositeLogger) {
     header + rows
   }
   
-  /**
-   * Импортирует продукты из CSV строки
-   * 
-   * @param csvData данные в формате CSV
-   * @return количество успешно импортированных продуктов
-   */
+  
   def importFromCSV(csvData: String): Int = {
     logger.debug("Starting CSV import")
-    val lines = csvData.split("\n").drop(1) // Пропускаем заголовок
+    val lines = csvData.split("\n").drop(1) 
     var imported = 0
     
     lines.foreach { line =>
@@ -220,13 +180,7 @@ class ProductService(logger: Logger = CompositeLogger) {
     imported
   }
   
-  /**
-   * Получает продукты с пагинацией
-   * 
-   * @param page номер страницы (начиная с 1)
-   * @param pageSize размер страницы
-   * @return результат пагинации
-   */
+  
   def getProductsPaginated(page: Int, pageSize: Int): Pagination.PageResult[Product] = {
     GlobalMetrics.time("products.paginated") {
       Pagination.validate(page, pageSize).map { case (validPage, validSize) =>

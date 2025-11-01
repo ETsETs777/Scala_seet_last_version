@@ -6,11 +6,7 @@ import com.example.event.{GlobalEventBus, UserCreatedEvent, UserUpdatedEvent, Us
 import com.example.metrics.GlobalMetrics
 import scala.util.Try
 
-/**
- * Сервис для управления пользователями
- * 
- * Предоставляет CRUD операции и статистику по пользователям
- */
+
 class UserService(logger: Logger = CompositeLogger) {
   private var users: Map[Long, User] = Map.empty
   
@@ -41,12 +37,7 @@ class UserService(logger: Logger = CompositeLogger) {
     users.values.filter(u => u.age >= minAge && u.age <= maxAge).toList
   }
   
-  /**
-   * Ищет пользователей по имени или email (без учета регистра)
-   * 
-   * @param searchTerm поисковый запрос
-   * @return список найденных пользователей
-   */
+  
   def searchUsers(searchTerm: String): List[User] = {
     val term = searchTerm.toLowerCase
     users.values.filter(u => 
@@ -54,32 +45,18 @@ class UserService(logger: Logger = CompositeLogger) {
     ).toList
   }
   
-  /**
-   * Получает пользователей, отсортированных по возрасту
-   * 
-   * @param ascending true для сортировки по возрастанию, false - по убыванию
-   * @return отсортированный список пользователей
-   */
+  
   def getUsersSortedByAge(ascending: Boolean = true): List[User] = {
     val sorted = users.values.toList.sortBy(_.age)
     if (ascending) sorted else sorted.reverse
   }
   
-  /**
-   * Проверяет, существует ли пользователь с заданным email
-   * 
-   * @param email email для проверки
-   * @return true если пользователь существует, false иначе
-   */
+  
   def emailExists(email: String): Boolean = {
     users.values.exists(_.email.toLowerCase == email.toLowerCase)
   }
   
-  /**
-   * Экспортирует всех пользователей в формат CSV
-   * 
-   * @return строка в формате CSV
-   */
+  
   def exportToCSV: String = {
     val header = "id,name,email,age,isActive\n"
     val rows = users.values.map { u =>
@@ -89,15 +66,10 @@ class UserService(logger: Logger = CompositeLogger) {
     header + rows
   }
   
-  /**
-   * Импортирует пользователей из CSV строки
-   * 
-   * @param csvData данные в формате CSV
-   * @return количество успешно импортированных пользователей
-   */
+  
   def importFromCSV(csvData: String): Int = {
     logger.debug("Starting CSV import for users")
-    val lines = csvData.split("\n").drop(1) // Пропускаем заголовок
+    val lines = csvData.split("\n").drop(1) 
     var imported = 0
     
     lines.foreach { line =>
@@ -128,22 +100,12 @@ class UserService(logger: Logger = CompositeLogger) {
     imported
   }
   
-  /**
-   * Получает пользователей по возрастной группе
-   * 
-   * @param ageGroup группа: "Minor", "Adult", "Senior"
-   * @return список пользователей в указанной группе
-   */
+  
   def getUsersByAgeGroup(ageGroup: String): List[User] = {
     users.values.filter(_.ageGroup == ageGroup).toList
   }
   
-  /**
-   * Деактивирует неактивных пользователей старше определенного возраста
-   * 
-   * @param maxAge максимальный возраст
-   * @return количество деактивированных пользователей
-   */
+  
   def deactivateUsersOlderThan(maxAge: Int): Int = {
     logger.debug(s"Deactivating users older than $maxAge")
     var deactivated = 0
@@ -181,11 +143,7 @@ class UserService(logger: Logger = CompositeLogger) {
     }
   }
   
-  /**
-   * Получает статистику по пользователям
-   * 
-   * @return объект со статистикой (количество, средний возраст и т.д.)
-   */
+  
   def getStatistics: UserStatistics = {
     val allUsers = users.values.toList
     if (allUsers.isEmpty) {
@@ -201,13 +159,7 @@ class UserService(logger: Logger = CompositeLogger) {
     }
   }
   
-  /**
-   * Получает пользователей с пагинацией
-   * 
-   * @param page номер страницы (начиная с 1)
-   * @param pageSize размер страницы
-   * @return результат пагинации
-   */
+  
   def getUsersPaginated(page: Int, pageSize: Int): Pagination.PageResult[User] = {
     GlobalMetrics.time("users.paginated") {
       Pagination.validate(page, pageSize).map { case (validPage, validSize) =>
@@ -217,9 +169,7 @@ class UserService(logger: Logger = CompositeLogger) {
   }
 }
 
-/**
- * Статистика по пользователям
- */
+
 case class UserStatistics(
   totalUsers: Int,
   activeUsers: Int,
