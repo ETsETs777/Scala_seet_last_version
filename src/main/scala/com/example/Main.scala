@@ -8,6 +8,9 @@ import com.example.pattern.PatternMatchingExample
 import com.example.serialization.JsonSerializer
 import com.example.event.{GlobalEventBus, EventHandler}
 import com.example.metrics.GlobalMetrics
+import com.example.async.AsyncExample
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 
 object Main {
@@ -29,6 +32,8 @@ object Main {
     demonstrateExtensions()
     
     demonstrateMetrics()
+    
+    demonstrateAsyncOperations()
     
     println("\n" + "=" * 50)
     println("Демонстрация завершена!")
@@ -214,5 +219,29 @@ object Main {
     GlobalEventBus.getEventHistory.take(5).foreach { event =>
       println(s"  [${event.timestamp}] ${event.eventType}")
     }
+  }
+  
+  def demonstrateAsyncOperations(): Unit = {
+    println("\n--- Async Operations ---")
+    
+    val result1 = Await.result(AsyncExample.asyncCalculation(10), 2.seconds)
+    println(s"Async calculation result: $result1")
+    
+    val combined = Await.result(AsyncExample.combineAsyncOperations(5, 3), 2.seconds)
+    println(s"Combined async operations: $combined")
+    
+    val batchResult = Await.result(
+      AsyncExample.batchProcess(List(1, 2, 3, 4, 5), 2, AsyncExample.asyncCalculation),
+      3.seconds
+    )
+    println(s"Batch processing result: $batchResult")
+    
+    val parallelResult = Await.result(
+      AsyncExample.parallelMap(List(1, 2, 3), AsyncExample.asyncCalculation),
+      2.seconds
+    )
+    println(s"Parallel map result: $parallelResult")
+    
+    println("Async operations demonstrated successfully")
   }
 }

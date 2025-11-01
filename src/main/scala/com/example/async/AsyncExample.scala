@@ -1,12 +1,102 @@
 package com.example.async
 
-import scala.concurrent.{Future, ExecutionContext}
-import scala.util.{Success, Failure}
-import java.util.concurrent.Executors
+import scala.concurrent.{Future, ExecutionContext, Promise}
+import scala.util.{Success, Failure, Try}
+import java.util.concurrent.{Executors, TimeUnit}
+import scala.concurrent.duration._
 
 object AsyncExample {
   
   implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
+  
+  def retry[T](operation: => Future[T], maxRetries: Int = 3, delay: Duration = 1.second): Future[T] = {
+    def attempt(retriesLeft: Int): Future[T] = {
+      operation.recoverWith {
+        case e if retriesLeft > 0 =>
+          Thread.sleep(delay.toMillis)
+          attempt(retriesLeft - 1)
+        case e => Future.failed(e)
+      }
+    }
+    attempt(maxRetries)
+  }
+  
+  def withTimeout[A](future: Future[A], timeout: Duration): Future[Option[A]] = {
+    val promise = Promise[Option[A]]()
+    val timer = new java.util.Timer()
+    timer.schedule(new java.util.TimerTask {
+      def run(): Unit = {
+        promise.trySuccess(None)
+        timer.cancel()
+      }
+    }, timeout.toMillis)
+    
+    future.onComplete {
+      case Success(value) =>
+        promise.trySuccess(Some(value))
+        timer.cancel()
+      case Failure(e) =>
+        promise.tryFailure(e)
+        timer.cancel()
+    }
+    
+    promise.future
+  }
+  
+  def firstCompleted[A](futures: List[Future[A]]): Future[A] = {
+    val promise = Promise[A]()
+    futures.foreach(_.onComplete {
+      case Success(value) => promise.trySuccess(value)
+      case Failure(e) => if (!promise.isCompleted) promise.tryFailure(e)
+    })
+    promise.future
+  }
+  
+  def batchProcess[A, B](items: List[A], batchSize: Int, processor: A => Future[B]): Future[List[B]] = {
+    val batches = items.grouped(batchSize).toList
+    val batchFutures = batches.map(batch => Future.sequence(batch.map(processor)))
+    Future.sequence(batchFutures).map(_.flatten)
+  }
+  
+  def circuitBreaker[T](operation: => Future[T], failureThreshold: Int = 5, timeout: Duration = 10.seconds): Future[T] = {
+    var failureCount = 0
+    var lastFailureTime = 0L
+    
+    def isOpen: Boolean = {
+      val now = System.currentTimeMillis()
+      if (now - lastFailureTime > timeout.toMillis) {
+        failureCount = 0
+        false
+      } else {
+        failureCount >= failureThreshold
+      }
+    }
+    
+    if (isOpen) {
+      Future.failed(new RuntimeException("Circuit breaker is open"))
+    } else {
+      operation.andThen {
+        case Failure(_) =>
+          failureCount += 1
+          lastFailureTime = System.currentTimeMillis()
+        case Success(_) =>
+          failureCount = 0
+      }
+    }
+  }
+  
+  def parallelMap[A, B](items: List[A], fn: A => Future[B]): Future[List[B]] = {
+    Future.sequence(items.map(fn))
+  }
+  
+  def sequentialMap[A, B](items: List[A], fn: A => Future[B]): Future[List[B]] = {
+    items.foldLeft(Future.successful(List.empty[B])) { (acc, item) =>
+      for {
+        prev <- acc
+        next <- fn(item)
+      } yield prev :+ next
+    }
+  }
   
   def asyncCalculation(x: Int): Future[Int] = Future {
     Thread.sleep(100)
@@ -46,14 +136,6 @@ object AsyncExample {
     Future.sequence(futures).map(_.headOption)
   }
   
-  def withTimeout[A](future: Future[A], timeoutMs: Long): Future[Option[A]] = {
-    Future {
-      Thread.sleep(timeoutMs)
-      None
-    }.flatMap { _ =>
-      Future.successful(None)
-    }
-  }
   
   def chainOperations(x: Int): Future[String] = {
     asyncCalculation(x)
