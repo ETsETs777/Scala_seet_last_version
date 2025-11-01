@@ -3,6 +3,11 @@ package com.example.service
 import com.example.models.{Product, ProductStatus, Active, OutOfStock}
 import scala.util.Try
 
+/**
+ * Сервис для управления продуктами
+ * 
+ * Предоставляет операции по управлению складом и продажами
+ */
 class ProductService {
   private var products: Map[Long, Product] = Map.empty
   private var nextId: Long = 1
@@ -71,5 +76,36 @@ class ProductService {
   
   def getProductsByPriceRange(minPrice: BigDecimal, maxPrice: BigDecimal): List[Product] = {
     products.values.filter(p => p.price >= minPrice && p.price <= maxPrice).toList
+  }
+  
+  /**
+   * Ищет продукты по названию (без учета регистра)
+   * 
+   * @param namePattern часть названия для поиска
+   * @return список найденных продуктов
+   */
+  def searchProductsByName(namePattern: String): List[Product] = {
+    val pattern = namePattern.toLowerCase
+    products.values.filter(p => p.name.toLowerCase.contains(pattern)).toList
+  }
+  
+  /**
+   * Получает продукты с низким запасом
+   * 
+   * @param threshold минимальный порог количества
+   * @return список продуктов с количеством ниже порога
+   */
+  def getLowStockProducts(threshold: Int = 10): List[Product] = {
+    products.values.filter(_.quantity < threshold).toList
+  }
+  
+  /**
+   * Получает топ N самых дорогих продуктов
+   * 
+   * @param n количество продуктов
+   * @return список продуктов, отсортированных по цене (убывание)
+   */
+  def getTopExpensiveProducts(n: Int): List[Product] = {
+    products.values.toList.sortBy(_.price)(Ordering[BigDecimal].reverse).take(n)
   }
 }

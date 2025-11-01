@@ -6,6 +6,11 @@ import com.example.util.Extensions._
 import com.example.functional.MonadExample
 import com.example.pattern.PatternMatchingExample
 
+/**
+ * Главный класс приложения
+ * 
+ * Демонстрирует основные возможности Scala-приложения
+ */
 object Main {
   def main(args: Array[String]): Unit = {
     println("=" * 50)
@@ -44,6 +49,13 @@ object Main {
     println(s"  Активных: ${stats.activeUsers}")
     println(f"  Средний возраст: ${stats.averageAge}%.2f")
     println(s"  Могут голосовать: ${stats.canVoteCount}")
+    println(s"  Возраст от ${stats.minAge} до ${stats.maxAge} лет")
+    
+    println("\nПоиск пользователей по запросу 'иван':")
+    userService.searchUsers("иван").foreach(u => println(s"  - ${u.displayName}"))
+    
+    println("\nПользователи, отсортированные по возрасту (возрастание):")
+    userService.getUsersSortedByAge(ascending = true).foreach(u => println(s"  - ${u.name}: ${u.age} лет"))
   }
   
   def demonstrateProductService(): Unit = {
@@ -62,6 +74,15 @@ object Main {
     println(s"\nОбщая стоимость инвентаря: ${productService.getTotalInventoryValue} руб.")
     println("\nДоступные продукты:")
     productService.getAvailableProducts.foreach(p => println(s"  - ${p.name}"))
+    
+    println("\nПоиск продуктов по названию 'мышь':")
+    productService.searchProductsByName("мышь").foreach(p => println(s"  - ${p.name}: ${p.price} руб."))
+    
+    println("\nПродукты с низким запасом (< 15):")
+    productService.getLowStockProducts(15).foreach(p => println(s"  - ${p.name}: ${p.quantity} шт."))
+    
+    println("\nТоп-2 самых дорогих продукта:")
+    productService.getTopExpensiveProducts(2).foreach(p => println(s"  - ${p.name}: ${p.price} руб."))
   }
   
   def demonstratePatternMatching(): Unit = {

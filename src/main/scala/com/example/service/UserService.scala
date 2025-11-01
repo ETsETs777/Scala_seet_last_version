@@ -3,6 +3,11 @@ package com.example.service
 import com.example.models.User
 import scala.util.Try
 
+/**
+ * Сервис для управления пользователями
+ * 
+ * Предоставляет CRUD операции и статистику по пользователям
+ */
 class UserService {
   private var users: Map[Long, User] = Map.empty
   
@@ -22,6 +27,40 @@ class UserService {
   
   def getUsersByAge(minAge: Int, maxAge: Int): List[User] = {
     users.values.filter(u => u.age >= minAge && u.age <= maxAge).toList
+  }
+  
+  /**
+   * Ищет пользователей по имени или email (без учета регистра)
+   * 
+   * @param searchTerm поисковый запрос
+   * @return список найденных пользователей
+   */
+  def searchUsers(searchTerm: String): List[User] = {
+    val term = searchTerm.toLowerCase
+    users.values.filter(u => 
+      u.name.toLowerCase.contains(term) || u.email.toLowerCase.contains(term)
+    ).toList
+  }
+  
+  /**
+   * Получает пользователей, отсортированных по возрасту
+   * 
+   * @param ascending true для сортировки по возрастанию, false - по убыванию
+   * @return отсортированный список пользователей
+   */
+  def getUsersSortedByAge(ascending: Boolean = true): List[User] = {
+    val sorted = users.values.toList.sortBy(_.age)
+    if (ascending) sorted else sorted.reverse
+  }
+  
+  /**
+   * Проверяет, существует ли пользователь с заданным email
+   * 
+   * @param email email для проверки
+   * @return true если пользователь существует, false иначе
+   */
+  def emailExists(email: String): Boolean = {
+    users.values.exists(_.email.toLowerCase == email.toLowerCase)
   }
   
   def updateUser(id: Long, name: Option[String] = None, email: Option[String] = None): Option[User] = {
@@ -44,6 +83,11 @@ class UserService {
     }
   }
   
+  /**
+   * Получает статистику по пользователям
+   * 
+   * @return объект со статистикой (количество, средний возраст и т.д.)
+   */
   def getStatistics: UserStatistics = {
     val allUsers = users.values.toList
     if (allUsers.isEmpty) {
@@ -60,6 +104,9 @@ class UserService {
   }
 }
 
+/**
+ * Статистика по пользователям
+ */
 case class UserStatistics(
   totalUsers: Int,
   activeUsers: Int,

@@ -2,6 +2,11 @@ package com.example.functional
 
 import scala.util.Try
 
+/**
+ * Примеры работы с монадами в Scala
+ * 
+ * Демонстрирует использование Option, Try и Either для безопасной обработки ошибок
+ */
 object MonadExample {
   
   def divide(a: Double, b: Double): Option[Double] = {

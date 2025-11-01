@@ -1,5 +1,10 @@
 package com.example.util
 
+/**
+ * Расширения типов через implicit classes (Type Enrichment)
+ * 
+ * Добавляет полезные методы к стандартным типам Scala
+ */
 object Extensions {
   implicit class RichString(val s: String) extends AnyVal {
     def capitalizeWords: String = {
@@ -7,7 +12,8 @@ object Extensions {
     }
     
     def isValidEmail: Boolean = {
-      s.contains("@") && s.contains(".") && s.length > 5
+      val emailRegex = "^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,}|\\[\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\])$".r
+      emailRegex.matches(s) && s.length > 5 && s.length <= 254
     }
     
     def truncate(maxLength: Int): String = {
