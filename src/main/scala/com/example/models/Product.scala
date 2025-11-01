@@ -2,11 +2,22 @@ package com.example.models
 
 import java.time.LocalDateTime
 
+/** Статус продукта */
 sealed trait ProductStatus
 case object Active extends ProductStatus
 case object Discontinued extends ProductStatus
 case object OutOfStock extends ProductStatus
 
+/**
+ * Модель продукта в системе
+ * 
+ * @param id уникальный идентификатор продукта
+ * @param name название продукта
+ * @param price цена продукта (должна быть > 0)
+ * @param quantity количество на складе (>= 0)
+ * @param status статус продукта
+ * @param createdAt дата и время создания записи
+ */
 case class Product(
   id: Long,
   name: String,
@@ -63,7 +74,18 @@ case class Product(
   }
 }
 
+/**
+ * Компаньон-объект для Product с фабричными методами
+ */
 object Product {
+  /**
+   * Создает новый продукт с валидацией
+   * 
+   * @param name название продукта
+   * @param price цена продукта
+   * @param quantity количество на складе
+   * @return Some(Product) если данные валидны, None иначе
+   */
   def create(name: String, price: BigDecimal, quantity: Int): Option[Product] = {
     if (price > 0 && quantity >= 0) {
       Some(Product(0, name, price, quantity, Active))
