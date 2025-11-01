@@ -1,7 +1,9 @@
 package com.example.service
 
 import com.example.models.User
-import com.example.util.{Logger, CompositeLogger}
+import com.example.util.{Logger, CompositeLogger, Pagination}
+import com.example.event.{GlobalEventBus, UserCreatedEvent, UserUpdatedEvent, UserDeletedEvent}
+import com.example.metrics.GlobalMetrics
 import scala.util.Try
 
 /**
@@ -24,6 +26,8 @@ class UserService(logger: Logger = CompositeLogger) {
     }
     users = users + (user.id -> user)
     logger.info(s"User added successfully: ${user.id} - ${user.name}")
+    GlobalEventBus.publish(UserCreatedEvent(user.id, user.name))
+    GlobalMetrics.incrementCounter("users.created")
     user
   }
   
@@ -166,6 +170,8 @@ class UserService(logger: Logger = CompositeLogger) {
       }
       users = users + (id -> updated)
       logger.info(s"User updated successfully: $id")
+      GlobalEventBus.publish(UserUpdatedEvent(id))
+      GlobalMetrics.incrementCounter("users.updated")
       updated
     } match {
       case Some(u) => Some(u)
@@ -192,6 +198,21 @@ class UserService(logger: Logger = CompositeLogger) {
       val maxAge = allUsers.map(_.age).max
       
       UserStatistics(allUsers.size, activeCount, avgAge, canVoteCount, minAge, maxAge)
+    }
+  }
+  
+  /**
+   * Получает пользователей с пагинацией
+   * 
+   * @param page номер страницы (начиная с 1)
+   * @param pageSize размер страницы
+   * @return результат пагинации
+   */
+  def getUsersPaginated(page: Int, pageSize: Int): Pagination.PageResult[User] = {
+    GlobalMetrics.time("users.paginated") {
+      Pagination.validate(page, pageSize).map { case (validPage, validSize) =>
+        Pagination.paginate(getAllUsers, validPage, validSize)
+      }.getOrElse(Pagination.emptyPage[User](page, pageSize))
     }
   }
 }

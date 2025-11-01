@@ -1,7 +1,9 @@
 package com.example.service
 
 import com.example.models.{Product, ProductStatus, Active, OutOfStock}
-import com.example.util.{Logger, CompositeLogger}
+import com.example.util.{Logger, CompositeLogger, Pagination}
+import com.example.event.{GlobalEventBus, ProductCreatedEvent, ProductSoldEvent}
+import com.example.metrics.GlobalMetrics
 import scala.util.Try
 
 /**
@@ -26,6 +28,9 @@ class ProductService(logger: Logger = CompositeLogger) {
     val productWithId = product.copy(id = nextId)
     products = products + (nextId -> productWithId)
     logger.info(s"Product added successfully: $nextId - ${product.name}")
+    GlobalEventBus.publish(ProductCreatedEvent(nextId, product.name))
+    GlobalMetrics.incrementCounter("products.created")
+    GlobalMetrics.setGauge("products.total", products.size.toDouble)
     nextId += 1
     productWithId
   }
@@ -74,6 +79,8 @@ class ProductService(logger: Logger = CompositeLogger) {
           status = if (newQuantity == 0) OutOfStock else product.status
         )
         products = products + (id -> updated)
+        GlobalEventBus.publish(ProductSoldEvent(id, quantity))
+        GlobalMetrics.incrementCounter("products.sold")
         Some(updated)
       } else {
         None
@@ -211,5 +218,20 @@ class ProductService(logger: Logger = CompositeLogger) {
     
     logger.info(s"CSV import completed: $imported products imported")
     imported
+  }
+  
+  /**
+   * Получает продукты с пагинацией
+   * 
+   * @param page номер страницы (начиная с 1)
+   * @param pageSize размер страницы
+   * @return результат пагинации
+   */
+  def getProductsPaginated(page: Int, pageSize: Int): Pagination.PageResult[Product] = {
+    GlobalMetrics.time("products.paginated") {
+      Pagination.validate(page, pageSize).map { case (validPage, validSize) =>
+        Pagination.paginate(getAllProducts, validPage, validSize)
+      }.getOrElse(Pagination.emptyPage[Product](page, pageSize))
+    }
   }
 }
