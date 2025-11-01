@@ -5,6 +5,9 @@ import com.example.service.{UserService, ProductService}
 import com.example.util.Extensions._
 import com.example.functional.MonadExample
 import com.example.pattern.PatternMatchingExample
+import com.example.serialization.JsonSerializer
+import com.example.event.{GlobalEventBus, EventHandler}
+import com.example.metrics.GlobalMetrics
 
 /**
  * Главный класс приложения
@@ -17,6 +20,8 @@ object Main {
     println("Демонстрация возможностей Scala")
     println("=" * 50)
     
+    setupEventHandlers()
+    
     demonstrateUserService()
     
     demonstrateProductService()
@@ -26,6 +31,8 @@ object Main {
     demonstrateFunctionalProgramming()
     
     demonstrateExtensions()
+    
+    demonstrateMetrics()
     
     println("\n" + "=" * 50)
     println("Демонстрация завершена!")
@@ -64,6 +71,17 @@ object Main {
     println("\nЭкспорт пользователей в CSV:")
     val csvData = userService.exportToCSV
     println(csvData.split("\n").take(3).mkString("\n") + "...")
+    
+    println("\nПагинация пользователей (страница 1, размер 2):")
+    val page = userService.getUsersPaginated(1, 2)
+    println(s"  Страница ${page.page} из ${page.totalPages}, всего элементов: ${page.totalItems}")
+    page.items.foreach(u => println(s"  - ${u.name}"))
+    
+    println("\nJSON сериализация пользователя:")
+    userService.getAllUsers.headOption.foreach { user =>
+      val json = JsonSerializer.toJson(user)
+      println(json)
+    }
   }
   
   def demonstrateProductService(): Unit = {
@@ -102,6 +120,17 @@ object Main {
     println("\nЭкспорт продуктов в CSV:")
     val productCSV = productService.exportToCSV
     println(productCSV.split("\n").take(3).mkString("\n") + "...")
+    
+    println("\nПагинация продуктов (страница 1, размер 2):")
+    val page = productService.getProductsPaginated(1, 2)
+    println(s"  Страница ${page.page} из ${page.totalPages}, всего элементов: ${page.totalItems}")
+    page.items.foreach(p => println(s"  - ${p.name}"))
+    
+    println("\nJSON сериализация продукта:")
+    productService.getAllProducts.headOption.foreach { product =>
+      val json = JsonSerializer.toJson(product)
+      println(json)
+    }
   }
   
   def demonstratePatternMatching(): Unit = {
@@ -159,5 +188,35 @@ object Main {
     
     val words = List("apple", "banana", "apple", "orange", "banana", "apple")
     println(s"\n  Подсчет вхождений: ${words.groupByCount}")
+  }
+  
+  def setupEventHandlers(): Unit = {
+    GlobalEventBus.subscribe("user.created") {
+      new EventHandler[com.example.event.UserCreatedEvent] {
+        def handle(event: com.example.event.UserCreatedEvent): Unit = {
+          println(s"[Event] User created: ${event.userId} - ${event.userName}")
+        }
+      }
+    }
+    
+    GlobalEventBus.subscribe("product.created") {
+      new EventHandler[com.example.event.ProductCreatedEvent] {
+        def handle(event: com.example.event.ProductCreatedEvent): Unit = {
+          println(s"[Event] Product created: ${event.productId} - ${event.productName}")
+        }
+      }
+    }
+  }
+  
+  def demonstrateMetrics(): Unit = {
+    println("\n--- Метрики ---")
+    
+    println("\nСводка метрик:")
+    println(GlobalMetrics.getMetricsSummary)
+    
+    println("\nИстория событий:")
+    GlobalEventBus.getEventHistory.take(5).foreach { event =>
+      println(s"  [${event.timestamp}] ${event.eventType}")
+    }
   }
 }
