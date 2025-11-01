@@ -39,6 +39,7 @@ object Main {
     User.create(1, "Иван Иванов", "ivan@example.com", 25).foreach(userService.addUser)
     User.create(2, "Мария Петрова", "maria@example.com", 30).foreach(userService.addUser)
     User.create(3, "Петр Сидоров", "petr@example.com", 17).foreach(userService.addUser)
+    User.create(4, "Анна Козлова", "anna@example.com", 72).foreach(userService.addUser)
     
     println("Все пользователи:")
     userService.getAllUsers.foreach(u => println(s"  - ${u.displayName}, возраст: ${u.age}, может голосовать: ${u.canVote}"))
@@ -56,6 +57,13 @@ object Main {
     
     println("\nПользователи, отсортированные по возрасту (возрастание):")
     userService.getUsersSortedByAge(ascending = true).foreach(u => println(s"  - ${u.name}: ${u.age} лет"))
+    
+    println("\nПользователи группы Adult:")
+    userService.getUsersByAgeGroup("Adult").foreach(u => println(s"  - ${u.name}: ${u.age} лет"))
+    
+    println("\nЭкспорт пользователей в CSV:")
+    val csvData = userService.exportToCSV
+    println(csvData.split("\n").take(3).mkString("\n") + "...")
   }
   
   def demonstrateProductService(): Unit = {
@@ -83,6 +91,17 @@ object Main {
     
     println("\nТоп-2 самых дорогих продукта:")
     productService.getTopExpensiveProducts(2).foreach(p => println(s"  - ${p.name}: ${p.price} руб."))
+    
+    println("\nПрименение скидки 10% к первому продукту:")
+    productService.getAllProducts.headOption.foreach { product =>
+      productService.applyDiscount(product.id, BigDecimal(10)).foreach { updated =>
+        println(s"  ${product.name}: ${product.price} руб. -> ${updated.price} руб.")
+      }
+    }
+    
+    println("\nЭкспорт продуктов в CSV:")
+    val productCSV = productService.exportToCSV
+    println(productCSV.split("\n").take(3).mkString("\n") + "...")
   }
   
   def demonstratePatternMatching(): Unit = {
