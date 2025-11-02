@@ -10,6 +10,7 @@ import scala.util.Try
 class ProductService(logger: Logger = CompositeLogger) {
   private var products: Map[Long, Product] = Map.empty
   private var nextId: Long = 1
+  private val searchIndex = new com.example.util.SearchIndex[Product]()
   
   def addProduct(product: Product): Try[Product] = Try {
     logger.debug(s"Attempting to add product: ${product.name}")
@@ -23,6 +24,7 @@ class ProductService(logger: Logger = CompositeLogger) {
     }
     val productWithId = product.copy(id = nextId)
     products = products + (nextId -> productWithId)
+    searchIndex.indexItem(product.name, productWithId)
     logger.info(s"Product added successfully: $nextId - ${product.name}")
     GlobalEventBus.publish(ProductCreatedEvent(nextId, product.name))
     GlobalMetrics.incrementCounter("products.created")
@@ -94,8 +96,7 @@ class ProductService(logger: Logger = CompositeLogger) {
   
   
   def searchProductsByName(namePattern: String): List[Product] = {
-    val pattern = namePattern.toLowerCase
-    products.values.filter(p => p.name.toLowerCase.contains(pattern)).toList
+    searchIndex.search(namePattern).toList
   }
   
   

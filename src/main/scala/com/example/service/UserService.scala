@@ -9,6 +9,7 @@ import scala.util.Try
 
 class UserService(logger: Logger = CompositeLogger) {
   private var users: Map[Long, User] = Map.empty
+  private val searchIndex = new com.example.util.SearchIndex[User]()
   
   def addUser(user: User): Try[User] = Try {
     logger.debug(s"Attempting to add user: ${user.id}")
@@ -21,6 +22,7 @@ class UserService(logger: Logger = CompositeLogger) {
       throw new IllegalArgumentException(s"Invalid user data for id ${user.id}")
     }
     users = users + (user.id -> user)
+    searchIndex.indexItems(List(user.name, user.email), user)
     logger.info(s"User added successfully: ${user.id} - ${user.name}")
     GlobalEventBus.publish(UserCreatedEvent(user.id, user.name))
     GlobalMetrics.incrementCounter("users.created")
@@ -39,10 +41,7 @@ class UserService(logger: Logger = CompositeLogger) {
   
   
   def searchUsers(searchTerm: String): List[User] = {
-    val term = searchTerm.toLowerCase
-    users.values.filter(u => 
-      u.name.toLowerCase.contains(term) || u.email.toLowerCase.contains(term)
-    ).toList
+    searchIndex.search(searchTerm).toList
   }
   
   
