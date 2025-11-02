@@ -9,6 +9,7 @@ import com.example.serialization.JsonSerializer
 import com.example.event.{GlobalEventBus, EventHandler}
 import com.example.metrics.GlobalMetrics
 import com.example.async.AsyncExample
+import com.example.util.{HealthCheck, Result}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -34,6 +35,10 @@ object Main {
     demonstrateMetrics()
     
     demonstrateAsyncOperations()
+    
+    demonstrateHealthChecks()
+    
+    demonstrateResultType()
     
     println("\n" + "=" * 50)
     println("Демонстрация завершена!")
@@ -243,5 +248,46 @@ object Main {
     println(s"Parallel map result: $parallelResult")
     
     println("Async operations demonstrated successfully")
+  }
+  
+  def demonstrateHealthChecks(): Unit = {
+    println("\n--- Health Checks ---")
+    
+    val healthCheck = HealthCheck.createComposite(
+      HealthCheck.memoryCheck(),
+      HealthCheck.diskCheck()
+    )
+    
+    val status = healthCheck.check()
+    println(s"Overall health status: ${status.name}")
+    if (status.isInstanceOf[com.example.util.Degraded]) {
+      println(s"Degradation reason: ${status.asInstanceOf[com.example.util.Degraded].message}")
+    }
+    
+    println("\nIndividual checks:")
+    healthCheck.getAllChecks.foreach { case (name, status) =>
+      println(s"  $name: ${status.name} (healthy: ${status.isHealthy})")
+    }
+  }
+  
+  def demonstrateResultType(): Unit = {
+    println("\n--- Result Type ---")
+    
+    import Result._
+    
+    val successResult: Result[Int, String] = Success(42)
+    val failureResult: Result[Int, String] = Failure("Error occurred")
+    
+    println(s"Success result: ${successResult.get}")
+    println(s"Failure result: ${failureResult.getOrElse(0)}")
+    
+    val mapped = successResult.map(_ * 2)
+    println(s"Mapped result: ${mapped.get}")
+    
+    val validated = fromOption(Some(100), "No value")
+    println(s"From Option (Some): ${validated.get}")
+    
+    val invalid = fromOption(None, "No value")
+    println(s"From Option (None): ${invalid.fold(err => s"Error: $err", value => s"Value: $value")}")
   }
 }
