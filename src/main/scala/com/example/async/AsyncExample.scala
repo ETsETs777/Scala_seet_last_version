@@ -10,10 +10,16 @@ object AsyncExample {
   implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
   
   def retry[T](operation: => Future[T], maxRetries: Int = 3, delay: Duration = 1.second): Future[T] = {
+    import com.example.util.Backoff
+    import Backoff.ExponentialBackoff
+    
+    val strategy = ExponentialBackoff(delay, 2.0, Some(10.seconds))
     def attempt(retriesLeft: Int): Future[T] = {
       operation.recoverWith {
         case e if retriesLeft > 0 =>
-          Thread.sleep(delay.toMillis)
+          val attemptNumber = maxRetries - retriesLeft
+          val backoffDelay = strategy.nextDelay(attemptNumber)
+          Thread.sleep(backoffDelay.toMillis)
           attempt(retriesLeft - 1)
         case e => Future.failed(e)
       }
@@ -132,6 +138,8 @@ object AsyncExample {
     Future.sequence(futures)
   }
   
+  
+
   def firstSuccess[A](futures: List[Future[A]]): Future[Option[A]] = {
     Future.sequence(futures).map(_.headOption)
   }
