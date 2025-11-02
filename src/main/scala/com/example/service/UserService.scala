@@ -167,6 +167,20 @@ class UserService(logger: Logger = CompositeLogger) {
       }.getOrElse(Pagination.emptyPage[User](page, pageSize))
     }
   }
+  
+  def bulkAddUsers(usersList: List[User]): List[Try[User]] = {
+    usersList.map(addUser)
+  }
+  
+  def getUserCount: Int = users.size
+  
+  def getUserAgeDistribution: Map[String, Int] = {
+    users.values.groupBy(_.ageGroup).mapValues(_.size)
+  }
+  
+  def getUsersWithEmailDomain(domain: String): List[User] = {
+    users.values.filter(_.email.endsWith(s"@$domain")).toList
+  }
 }
 
 

@@ -188,4 +188,30 @@ class ProductService(logger: Logger = CompositeLogger) {
       }.getOrElse(Pagination.emptyPage[Product](page, pageSize))
     }
   }
+  
+  def bulkAddProducts(productsList: List[Product]): List[Try[Product]] = {
+    productsList.map(addProduct)
+  }
+  
+  def getProductCount: Int = products.size
+  
+  def getProductsByPriceCategory(thresholds: List[BigDecimal]): Map[String, List[Product]] = {
+    val sortedThresholds = thresholds.sorted
+    products.values.groupBy { product =>
+      val category = sortedThresholds.indexWhere(_ > product.price)
+      if (category == -1) s">${sortedThresholds.last}"
+      else if (category == 0) s"<${sortedThresholds.head}"
+      else s"${sortedThresholds(category - 1)}-${sortedThresholds(category)}"
+    }
+  }
+  
+  def getAveragePrice: BigDecimal = {
+    val allProducts = products.values.toList
+    if (allProducts.isEmpty) BigDecimal(0)
+    else allProducts.map(_.price).sum / allProducts.size
+  }
+  
+  def getStockDistribution: Map[ProductStatus, Int] = {
+    products.values.groupBy(_.status).mapValues(_.size)
+  }
 }
