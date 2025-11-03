@@ -219,6 +219,8 @@ object Main {
     
     println("\nСводка метрик:")
     println(GlobalMetrics.getMetricsSummary)
+    println("\nPrometheus export:")
+    println(GlobalMetrics.exportPrometheus)
     
     println("\nИстория событий:")
     GlobalEventBus.getEventHistory.take(5).foreach { event =>

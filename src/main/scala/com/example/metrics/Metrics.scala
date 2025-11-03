@@ -18,20 +18,33 @@ class MetricsCollector {
   private val counters = mutable.Map[String, Long]().withDefaultValue(0L)
   private val gauges = mutable.Map[String, Double]()
   private val timers = mutable.ListBuffer[(String, Long)]()
+  private val observations = mutable.Map[String, mutable.ListBuffer[Double]]()
   
-  
-  def incrementCounter(name: String, by: Long = 1L): Unit = {
-    counters(name) += by
+  private def labelKey(labels: Map[String, String]): String = {
+    if (labels.isEmpty) ""
+    else labels.toSeq.sortBy(_._1).map { case (k, v) => s"$k=$v" }.mkString("{", ",", "}")
   }
   
   
-  def setGauge(name: String, value: Double): Unit = {
-    gauges(name) = value
+  def incrementCounter(name: String, by: Long = 1L): Unit = counters(name) += by
+  def incrementCounter(name: String, labels: Map[String, String], by: Long): Unit = {
+    val key = s"$name${labelKey(labels)}"
+    counters(key) = counters.getOrElse(key, 0L) + by
+  }
+  def incrementCounter(name: String, labels: Map[String, String] = Map.empty): Unit = incrementCounter(name, labels, 1L)
+  
+  
+  def setGauge(name: String, value: Double): Unit = gauges(name) = value
+  def setGauge(name: String, labels: Map[String, String], value: Double): Unit = {
+    val key = s"$name${labelKey(labels)}"
+    gauges(key) = value
   }
   
   
-  def recordTimer(name: String, durationMs: Long): Unit = {
-    timers += ((name, durationMs))
+  def recordTimer(name: String, durationMs: Long): Unit = timers += ((name, durationMs))
+  def observe(name: String, value: Double): Unit = {
+    val buf = observations.getOrElseUpdate(name, mutable.ListBuffer.empty[Double])
+    buf += value
   }
   
   
@@ -61,6 +74,15 @@ class MetricsCollector {
     }
   }
   
+  def getTimerPercentile(name: String, percentile: Double): Option[Double] = {
+    val values = timers.filter(_._1 == name).map(_._2.toDouble).sorted
+    if (values.isEmpty) None
+    else {
+      val idx = math.ceil(percentile * values.size).toInt - 1
+      Some(values(math.max(0, math.min(values.size - 1, idx))))
+    }
+  }
+  
   
   def getMetricsSummary: String = {
     val counterStr = counters.map { case (k, v) => s"Counter[$k] = $v" }.mkString("\n")
@@ -79,6 +101,40 @@ class MetricsCollector {
       |
       |Timers:
       |$timerStr""".stripMargin
+  }
+  
+  def exportPrometheus: String = {
+    val sb = new StringBuilder
+    counters.foreach { case (k, v) =>
+      sb.append(s"# TYPE ${k.replaceAll("[{}=,]", "_")} counter\n")
+      sb.append(s"$k $v\n")
+    }
+    gauges.foreach { case (k, v) =>
+      sb.append(s"# TYPE ${k.replaceAll("[{}=,]", "_")} gauge\n")
+      sb.append(s"$k $v\n")
+    }
+    val groupedTimers = timers.groupBy(_._1)
+    groupedTimers.foreach { case (name, vals) =>
+      val sum = vals.map(_._2.toDouble).sum
+      val count = vals.size
+      val p50 = getTimerPercentile(name, 0.5).getOrElse(0.0)
+      val p90 = getTimerPercentile(name, 0.9).getOrElse(0.0)
+      val p99 = getTimerPercentile(name, 0.99).getOrElse(0.0)
+      sb.append(s"# TYPE ${name}_summary summary\n")
+      sb.append(s"${name}_sum $sum\n")
+      sb.append(s"${name}_count $count\n")
+      sb.append(s"${name}_quantile{quantile=\"0.5\"} $p50\n")
+      sb.append(s"${name}_quantile{quantile=\"0.9\"} $p90\n")
+      sb.append(s"${name}_quantile{quantile=\"0.99\"} $p99\n")
+    }
+    observations.foreach { case (name, vals) =>
+      val sum = vals.sum
+      val count = vals.size
+      sb.append(s"# TYPE ${name}_hist summary\n")
+      sb.append(s"${name}_sum $sum\n")
+      sb.append(s"${name}_count $count\n")
+    }
+    sb.toString()
   }
   
   

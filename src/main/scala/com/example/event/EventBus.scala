@@ -2,6 +2,7 @@ package com.example.event
 
 import scala.collection.mutable
 import scala.util.{Try, Success, Failure}
+import com.example.metrics.GlobalMetrics
 
 
 sealed trait Event {
@@ -78,6 +79,7 @@ class EventBus {
   
   def publish(event: Event): Unit = {
     val processedEvent = middlewares.foldLeft(event) { (e, mw) => mw(e) }
+    GlobalMetrics.incrementCounter("events_published", Map("type" -> processedEvent.eventType))
     
     if (eventHistory.size >= maxHistorySize) {
       eventHistory.remove(0)
@@ -91,6 +93,7 @@ class EventBus {
         } match {
           case Failure(e) =>
             Console.err.println(s"Error handling event ${processedEvent.eventType}: ${e.getMessage}")
+            GlobalMetrics.incrementCounter("events_errors", Map("type" -> processedEvent.eventType))
             errorListeners.foreach(cb => Try(cb(e)))
           case Success(_) => 
         }
