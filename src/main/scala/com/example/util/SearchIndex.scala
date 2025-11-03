@@ -48,3 +48,4 @@ class SearchIndex[T] {
   }
 }
 
+
