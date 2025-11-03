@@ -4,6 +4,7 @@ import com.example.models.{Product, ProductStatus, Active, OutOfStock}
 import com.example.util.{Logger, CompositeLogger, Pagination, RateLimiter, RateLimitConfig, Validator}
 import com.example.event.{GlobalEventBus, ProductCreatedEvent, ProductSoldEvent}
 import com.example.metrics.GlobalMetrics
+import com.example.interop.DataProcessor
 import scala.util.Try
 
 
@@ -225,5 +226,21 @@ class ProductService(logger: Logger = CompositeLogger) {
   
   def getStockDistribution: Map[ProductStatus, Int] = {
     products.values.groupBy(_.status).mapValues(_.size)
+  }
+  
+  def getStatisticsWithPython: Try[Map[String, Any]] = {
+    DataProcessor.calculateProductStatisticsWithPython(getAllProducts)
+  }
+  
+  def formatProductsAsJsonWithJavaScript: Try[String] = {
+    DataProcessor.formatProductsAsJsonWithJavaScript(getAllProducts)
+  }
+  
+  def calculateDiscountWithPython(price: BigDecimal, discountPercent: Double): Try[BigDecimal] = {
+    DataProcessor.calculateDiscountWithPython(price, discountPercent)
+  }
+  
+  def calculatePriceDistributionWithPython(bins: Int = 10): Try[Map[String, Int]] = {
+    DataProcessor.calculatePriceDistributionWithPython(getAllProducts, bins)
   }
 }

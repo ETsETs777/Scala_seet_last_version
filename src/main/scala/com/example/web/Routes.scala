@@ -123,6 +123,71 @@ class Routes(userService: UserService, productService: ProductService)(implicit 
               }
             }
           }
+        },
+        path("api" / "users" / "statistics" / "python") {
+          get {
+            val result = userService.getStatisticsWithPython
+            val response = result.fold(
+              err => s"""{"success":false,"error":"${escapeJson(err.getMessage)}"}""",
+              stats => {
+                val statsJson = stats.map { case (k, v) => s""""${k}":${formatValue(v)}""" }.mkString(",")
+                s"""{"success":true,"statistics":{$statsJson}}"""
+              }
+            )
+            complete(jsonResponse(response))
+          }
+        },
+        path("api" / "users" / "format" / "javascript") {
+          get {
+            val result = userService.formatUsersAsJsonWithJavaScript
+            val response = result.fold(
+              err => s"""{"success":false,"error":"${escapeJson(err.getMessage)}"}""",
+              json => s"""{"success":true,"json":"${escapeJson(json)}"}"""
+            )
+            complete(jsonResponse(response))
+          }
+        },
+        path("api" / "products" / "statistics" / "python") {
+          get {
+            val result = productService.getStatisticsWithPython
+            val response = result.fold(
+              err => s"""{"success":false,"error":"${escapeJson(err.getMessage)}"}""",
+              stats => {
+                val statsJson = stats.map { case (k, v) => s""""${k}":${formatValue(v)}""" }.mkString(",")
+                s"""{"success":true,"statistics":{$statsJson}}"""
+              }
+            )
+            complete(jsonResponse(response))
+          }
+        },
+        path("api" / "products" / "format" / "javascript") {
+          get {
+            val result = productService.formatProductsAsJsonWithJavaScript
+            val response = result.fold(
+              err => s"""{"success":false,"error":"${escapeJson(err.getMessage)}"}""",
+              json => s"""{"success":true,"json":"${escapeJson(json)}"}"""
+            )
+            complete(jsonResponse(response))
+          }
+        },
+        path("api" / "products" / "discount" / "python") {
+          post {
+            entity(as[String]) { body =>
+              try {
+                val price = extractBigDecimal(body, "price").getOrElse(BigDecimal(0))
+                val discount = extractString(body, "discount").map(_.toDouble).getOrElse(0.0)
+                val result = productService.calculateDiscountWithPython(price, discount)
+                val response = result.fold(
+                  err => s"""{"success":false,"error":"${escapeJson(err.getMessage)}"}""",
+                  finalPrice => s"""{"success":true,"originalPrice":${price.toDouble},"discountPercent":$discount,"finalPrice":${finalPrice.toDouble}}"""
+                )
+                complete(jsonResponse(response))
+              } catch {
+                case e: Exception =>
+                  complete(StatusCodes.BadRequest, textResponse(s"Error: ${e.getMessage}"))
+              }
+            }
+          }
         }
       )
     }
@@ -150,5 +215,12 @@ class Routes(userService: UserService, productService: ProductService)(implicit 
      .replace("\n", "\\n")
      .replace("\r", "\\r")
      .replace("\t", "\\t")
+  }
+  
+  private def formatValue(v: Any): String = v match {
+    case s: String => s""""${escapeJson(s)}""""
+    case n: Number => n.toString
+    case b: Boolean => b.toString
+    case _ => s""""${escapeJson(v.toString)}""""
   }
 }

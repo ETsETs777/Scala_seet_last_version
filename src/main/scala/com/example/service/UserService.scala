@@ -4,6 +4,7 @@ import com.example.models.User
 import com.example.util.{Logger, CompositeLogger, Pagination, RateLimiter, RateLimitConfig, Validator}
 import com.example.event.{GlobalEventBus, UserCreatedEvent, UserUpdatedEvent, UserDeletedEvent}
 import com.example.metrics.GlobalMetrics
+import com.example.interop.DataProcessor
 import scala.util.Try
 
 
@@ -189,6 +190,22 @@ class UserService(logger: Logger = CompositeLogger) {
   
   def getUsersWithEmailDomain(domain: String): List[User] = {
     users.values.filter(_.email.endsWith(s"@$domain")).toList
+  }
+  
+  def getStatisticsWithPython: Try[Map[String, Any]] = {
+    DataProcessor.calculateUserStatisticsWithPython(getAllUsers)
+  }
+  
+  def formatUsersAsJsonWithJavaScript: Try[String] = {
+    DataProcessor.formatUsersAsJsonWithJavaScript(getAllUsers)
+  }
+  
+  def groupUsersByAgeRangeWithPython(ranges: List[(Int, Int)]): Try[Map[String, Int]] = {
+    DataProcessor.groupUsersByAgeRangeWithPython(getAllUsers, ranges)
+  }
+  
+  def validateEmailWithJavaScript(email: String): Try[Boolean] = {
+    DataProcessor.validateEmailWithJavaScript(email)
   }
 }
 

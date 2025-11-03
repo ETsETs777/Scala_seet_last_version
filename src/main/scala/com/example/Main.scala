@@ -329,5 +329,53 @@ console.log("Result: " + result);"""
       err => println(s"  Node.js not available: ${err.getMessage}"),
       output => println(s"  Output:\n$output")
     )
+    
+    println("\n--- Integration with Services ---")
+    
+    val userService = new UserService()
+    userService.addUser(User.create(1L, "Alice", "alice@example.com", 25).get)
+    userService.addUser(User.create(2L, "Bob", "bob@example.com", 30).get)
+    userService.addUser(User.create(3L, "Charlie", "charlie@example.com", 35).get)
+    
+    println("\nUser statistics calculated with Python:")
+    userService.getStatisticsWithPython.fold(
+      err => println(s"  Error: ${err.getMessage}"),
+      stats => stats.foreach { case (key, value) => println(s"  $key: $value") }
+    )
+    
+    println("\nUsers formatted as JSON with JavaScript:")
+    userService.formatUsersAsJsonWithJavaScript.fold(
+      err => println(s"  Error: ${err.getMessage}"),
+      json => println(s"  ${json.take(200)}...")
+    )
+    
+    println("\nAge groups calculated with Python:")
+    userService.groupUsersByAgeRangeWithPython(List((20, 29), (30, 39), (40, 49))).fold(
+      err => println(s"  Error: ${err.getMessage}"),
+      groups => groups.foreach { case (range, count) => println(s"  $range: $count users") }
+    )
+    
+    val productService = new ProductService()
+    productService.addProduct(Product.create("Laptop", BigDecimal(1000), 10).get)
+    productService.addProduct(Product.create("Mouse", BigDecimal(20), 50).get)
+    productService.addProduct(Product.create("Keyboard", BigDecimal(50), 30).get)
+    
+    println("\nProduct statistics calculated with Python:")
+    productService.getStatisticsWithPython.fold(
+      err => println(s"  Error: ${err.getMessage}"),
+      stats => stats.foreach { case (key, value) => println(s"  $key: $value") }
+    )
+    
+    println("\nDiscount calculation with Python (20% off $1000):")
+    productService.calculateDiscountWithPython(BigDecimal(1000), 20.0).fold(
+      err => println(s"  Error: ${err.getMessage}"),
+      price => println(s"  Final price: $$$price")
+    )
+    
+    println("\nPrice distribution calculated with Python:")
+    productService.calculatePriceDistributionWithPython(5).fold(
+      err => println(s"  Error: ${err.getMessage}"),
+      dist => dist.foreach { case (range, count) => println(s"  $range: $count products") }
+    )
   }
 }
