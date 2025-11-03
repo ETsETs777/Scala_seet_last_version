@@ -14,6 +14,7 @@ import com.example.models.{User, Product, Active}
 import com.example.metrics.GlobalMetrics
 import com.example.util.FileService
 import com.example.util.Localization
+import com.example.interop.{GlobalScriptExecutor, Python, JavaScript, Bash}
 
 object JsonUtil {
   def jsonResponse(body: String): HttpEntity.Strict = HttpEntity(ContentTypes.`application/json`, body)
@@ -97,6 +98,31 @@ class Routes(userService: UserService, productService: ProductService)(implicit 
               complete(HttpEntity(ContentTypes.`application/json`, body))
             }
           }
+        },
+        path("api" / "execute") {
+          post {
+            entity(as[String]) { body =>
+              try {
+                val lang = extractString(body, "language").getOrElse("python")
+                val code = extractString(body, "code").getOrElse("")
+                val language = lang match {
+                  case "python" => Python
+                  case "javascript" | "js" => JavaScript
+                  case "bash" | "sh" => Bash
+                  case _ => Python
+                }
+                val result = GlobalScriptExecutor.executeCode(language, code)
+                val response = result.fold(
+                  err => s"""{"success":false,"error":"${escapeJson(err.getMessage)}"}""",
+                  output => s"""{"success":true,"output":"${escapeJson(output)}"}"""
+                )
+                complete(jsonResponse(response))
+              } catch {
+                case e: Exception =>
+                  complete(StatusCodes.BadRequest, textResponse(s"Error: ${e.getMessage}"))
+              }
+            }
+          }
         }
       )
     }
@@ -116,5 +142,13 @@ class Routes(userService: UserService, productService: ProductService)(implicit 
   private def extractBigDecimal(json: String, key: String): Option[BigDecimal] = {
     val pattern = ("\"" + key + "\"\\s*:\\s*(\\d+(?:\\.\\d+)?)").r
     pattern.findFirstMatchIn(json).map(m => BigDecimal(m.group(1)))
+  }
+  
+  private def escapeJson(s: String): String = {
+    s.replace("\\", "\\\\")
+     .replace("\"", "\\\"")
+     .replace("\n", "\\n")
+     .replace("\r", "\\r")
+     .replace("\t", "\\t")
   }
 }

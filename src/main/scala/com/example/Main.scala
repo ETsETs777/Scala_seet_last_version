@@ -12,6 +12,7 @@ import com.example.web.HttpServer
 import com.example.util.Localization
 import com.example.async.AsyncExample
 import com.example.util.{HealthCheck, Result}
+import com.example.interop.{GlobalScriptExecutor, Python, JavaScript}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -47,6 +48,8 @@ object Main {
     demonstrateHealthChecks()
     
     demonstrateResultType()
+    
+    demonstrateMultiLanguageSupport()
     
     println("\n" + "=" * 50)
     println(Localization.t(lang, "app.done"))
@@ -299,5 +302,32 @@ object Main {
     
     val invalid = fromOption(None, "No value")
     println(s"From Option (None): ${invalid.fold(err => s"Error: $err", value => s"Value: $value")}")
+  }
+  
+  def demonstrateMultiLanguageSupport(): Unit = {
+    println("\n--- Multi-Language Programming Support ---")
+    
+    println("\nAvailable languages:")
+    GlobalScriptExecutor.getAvailableLanguages.foreach { lang =>
+      println(s"  - ${lang.command} (${lang.extension})")
+    }
+    
+    println("\nPython example:")
+    val pythonCode = """print("Hello from Python!")
+result = 2 + 2
+print(f"Result: {result}")"""
+    GlobalScriptExecutor.executeCode(Python, pythonCode).fold(
+      err => println(s"  Python not available: ${err.getMessage}"),
+      output => println(s"  Output:\n$output")
+    )
+    
+    println("\nJavaScript example:")
+    val jsCode = """console.log("Hello from Node.js!");
+const result = 10 * 5;
+console.log("Result: " + result);"""
+    GlobalScriptExecutor.executeCode(JavaScript, jsCode).fold(
+      err => println(s"  Node.js not available: ${err.getMessage}"),
+      output => println(s"  Output:\n$output")
+    )
   }
 }
