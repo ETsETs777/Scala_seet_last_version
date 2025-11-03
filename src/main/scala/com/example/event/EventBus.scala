@@ -48,6 +48,7 @@ class EventBus {
   private val eventHistory = mutable.ListBuffer[Event]()
   private val middlewares = mutable.ListBuffer[EventMiddleware]()
   private val maxHistorySize = 10000
+  private val errorListeners = mutable.ListBuffer[Throwable => Unit]()
   
   def subscribe[T <: Event](eventType: String, priority: Int = 0)(handler: EventHandler[T]): Unit = {
     val currentHandlers = handlers.getOrElse(eventType, List.empty)
@@ -58,6 +59,21 @@ class EventBus {
   
   def addMiddleware(middleware: EventMiddleware): Unit = {
     middlewares += middleware
+  }
+  
+  def onError(listener: Throwable => Unit): Unit = {
+    errorListeners += listener
+  }
+  
+  def subscribeOnce[T <: Event](eventType: String, priority: Int = 0)(handler: EventHandler[T]): Unit = {
+    val self = this
+    val wrapper = new EventHandler[T] {
+      def handle(event: T): Unit = {
+        try handler.handle(event)
+        finally self.unsubscribe(eventType, this)
+      }
+    }
+    subscribe(eventType, priority)(wrapper)
   }
   
   def publish(event: Event): Unit = {
@@ -75,10 +91,15 @@ class EventBus {
         } match {
           case Failure(e) =>
             Console.err.println(s"Error handling event ${processedEvent.eventType}: ${e.getMessage}")
+            errorListeners.foreach(cb => Try(cb(e)))
           case Success(_) => 
         }
       }
     }
+  }
+  
+  def publishAsync(event: Event)(implicit ec: scala.concurrent.ExecutionContext): Unit = {
+    scala.concurrent.Future { publish(event) }
   }
   
   def unsubscribe(eventType: String, handler: EventHandler[_ <: Event]): Boolean = {
