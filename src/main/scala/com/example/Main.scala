@@ -8,6 +8,7 @@ import com.example.pattern.PatternMatchingExample
 import com.example.serialization.JsonSerializer
 import com.example.event.{GlobalEventBus, EventHandler}
 import com.example.metrics.GlobalMetrics
+import com.example.web.HttpServer
 import com.example.async.AsyncExample
 import com.example.util.{HealthCheck, Result}
 import scala.concurrent.Await
@@ -19,6 +20,11 @@ object Main {
     println("=" * 50)
     println("Демонстрация возможностей Scala")
     println("=" * 50)
+    
+    if (args.contains("--server")) {
+      println("Starting HTTP server on 0.0.0.0:8080 ...")
+      HttpServer.start()
+    }
     
     setupEventHandlers()
     
