@@ -9,6 +9,7 @@ import com.example.serialization.JsonSerializer
 import com.example.event.{GlobalEventBus, EventHandler}
 import com.example.metrics.GlobalMetrics
 import com.example.web.HttpServer
+import com.example.util.Localization
 import com.example.async.AsyncExample
 import com.example.util.{HealthCheck, Result}
 import scala.concurrent.Await
@@ -17,8 +18,9 @@ import scala.concurrent.duration._
 
 object Main {
   def main(args: Array[String]): Unit = {
+    val lang = sys.env.get("APP_LANG").getOrElse("ru")
     println("=" * 50)
-    println("Демонстрация возможностей Scala")
+    println(Localization.t(lang, "app.title"))
     println("=" * 50)
     
     if (args.contains("--server")) {
@@ -47,7 +49,7 @@ object Main {
     demonstrateResultType()
     
     println("\n" + "=" * 50)
-    println("Демонстрация завершена!")
+    println(Localization.t(lang, "app.done"))
     println("=" * 50)
   }
   

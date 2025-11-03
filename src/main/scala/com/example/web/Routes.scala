@@ -13,6 +13,7 @@ import com.example.service.{UserService, ProductService}
 import com.example.models.{User, Product, Active}
 import com.example.metrics.GlobalMetrics
 import com.example.util.FileService
+import com.example.util.Localization
 
 object JsonUtil {
   def jsonResponse(body: String): HttpEntity.Strict = HttpEntity(ContentTypes.`application/json`, body)
@@ -90,8 +91,11 @@ class Routes(userService: UserService, productService: ProductService)(implicit 
         },
         path("health") {
           get {
-            val ok = HttpEntity(ContentTypes.`application/json`, "{\"status\":\"ok\"}")
-            complete(ok)
+            optionalHeaderValueByName("Accept-Language") { langHeader =>
+              val lang = Localization.detect(langHeader)
+              val body = s"{\"status\":\"${Localization.t(lang, "health.ok")}\"}"
+              complete(HttpEntity(ContentTypes.`application/json`, body))
+            }
           }
         }
       )
