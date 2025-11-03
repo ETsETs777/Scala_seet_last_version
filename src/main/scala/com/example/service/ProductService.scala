@@ -1,7 +1,7 @@
 package com.example.service
 
 import com.example.models.{Product, ProductStatus, Active, OutOfStock}
-import com.example.util.{Logger, CompositeLogger, Pagination}
+import com.example.util.{Logger, CompositeLogger, Pagination, RateLimiter, RateLimitConfig, Validator}
 import com.example.event.{GlobalEventBus, ProductCreatedEvent, ProductSoldEvent}
 import com.example.metrics.GlobalMetrics
 import scala.util.Try
@@ -11,8 +11,19 @@ class ProductService(logger: Logger = CompositeLogger) {
   private var products: Map[Long, Product] = Map.empty
   private var nextId: Long = 1
   private val searchIndex = new com.example.util.SearchIndex[Product]()
+  private val addLimiter = new RateLimiter()
   
   def addProduct(product: Product): Try[Product] = Try {
+    if (!addLimiter.isAllowed("product:add", RateLimitConfig(maxRequests = 200, window = scala.concurrent.duration.Duration(60, scala.concurrent.duration.SECONDS)))) {
+      throw new IllegalStateException("Rate limit exceeded for addProduct")
+    }
+    val validationErrors =
+      Validator.validate(product.price, Validator.positiveBigDecimal) ++
+      Validator.validate(product.quantity, Validator.range(0, Int.MaxValue)) ++
+      Validator.validate(product.name, Validator.notEmpty)
+    if (validationErrors.nonEmpty) {
+      throw new IllegalArgumentException(validationErrors.mkString("; "))
+    }
     logger.debug(s"Attempting to add product: ${product.name}")
     if (product.price <= 0) {
       logger.error(s"Invalid product price: ${product.price}")

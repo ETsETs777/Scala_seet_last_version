@@ -1,7 +1,7 @@
 package com.example.service
 
 import com.example.models.User
-import com.example.util.{Logger, CompositeLogger, Pagination}
+import com.example.util.{Logger, CompositeLogger, Pagination, RateLimiter, RateLimitConfig, Validator}
 import com.example.event.{GlobalEventBus, UserCreatedEvent, UserUpdatedEvent, UserDeletedEvent}
 import com.example.metrics.GlobalMetrics
 import scala.util.Try
@@ -10,8 +10,18 @@ import scala.util.Try
 class UserService(logger: Logger = CompositeLogger) {
   private var users: Map[Long, User] = Map.empty
   private val searchIndex = new com.example.util.SearchIndex[User]()
+  private val addLimiter = new RateLimiter()
   
   def addUser(user: User): Try[User] = Try {
+    if (!addLimiter.isAllowed("user:add", RateLimitConfig(maxRequests = 100, window = scala.concurrent.duration.Duration(60, scala.concurrent.duration.SECONDS)))) {
+      throw new IllegalStateException("Rate limit exceeded for addUser")
+    }
+    val validationErrors = Validator.validate(user.email, Validator.email) ++
+      Validator.validate(user.name, Validator.notEmpty, Validator.minLength(2)) ++
+      Validator.validate(user.age, Validator.range(1, 150))
+    if (validationErrors.nonEmpty) {
+      throw new IllegalArgumentException(validationErrors.mkString("; "))
+    }
     logger.debug(s"Attempting to add user: ${user.id}")
     if (users.contains(user.id)) {
       logger.warn(s"User with id ${user.id} already exists")
