@@ -80,6 +80,7 @@ java -Xmx512M -jar "$env:USERPROFILE\.sbt\bin\sbt-launch.jar" run
 
 ### Запуск тестов
 
+
 ```bash
 .\sbt.bat test
 ```
